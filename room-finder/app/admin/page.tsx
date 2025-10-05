@@ -33,41 +33,7 @@ import {
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
-interface Room {
-  id: string;
-  number: string;
-  name: string;
-  type:
-    | "classroom"
-    | "office"
-    | "lab"
-    | "restroom"
-    | "elevator"
-    | "staircase"
-    | "other";
-  floor: number;
-  coordinates: { x: number; y: number };
-  accessible: boolean;
-  capacity?: number;
-  description?: string;
-}
-
-interface Floor {
-  id: string;
-  number: number;
-  name: string;
-  buildingId: string;
-  floorPlanUrl?: string;
-  rooms: Room[];
-}
-
-interface Building {
-  id: string;
-  name: string;
-  address: string;
-  coordinates: { lat: number; lng: number };
-  floors: Floor[];
-}
+import type { Room, Floor, Building, RoomPayload } from "@/lib/types";
 
 export default function AdminMapEditor() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -335,6 +301,41 @@ export default function AdminMapEditor() {
       capacity: newRoom.capacity ? parseInt(newRoom.capacity) : undefined,
       description: newRoom.description,
     };
+
+    // Compose a payload you can persist or send to your API
+    const feature = {
+      type: "Feature" as const,
+      properties: {
+        roomId: room.id,
+        number: room.number,
+        name: room.name,
+        type: room.type,
+        floor: room.floor,
+        accessible: room.accessible,
+        capacity: room.capacity ?? null,
+      },
+      geometry: {
+        type: "Point" as const,
+        coordinates: [room.coordinates.x, room.coordinates.y] as [
+          number,
+          number
+        ],
+      },
+    };
+
+    const payload = {
+      buildingId: selectedBuilding!.id,
+      floorId: selectedFloor.id,
+      coordinateSystem: hasMapbox ? "wgs84" : "pixel",
+      room,
+      feature,
+      featureCollection: {
+        type: "FeatureCollection" as const,
+        features: [feature],
+      },
+    };
+
+    console.log("Room saved payload:", payload);
 
     const updatedFloor = {
       ...selectedFloor,
