@@ -1,72 +1,201 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Building2 } from "lucide-react";
+import { SimpleCard, SimpleCardContent } from "@/components/ui/simple-card";
+import { SimpleInput } from "@/components/ui/simple-input";
+import { SimpleButton } from "@/components/ui/simple-button";
+import { CornerAccentButton } from "@/components/ui/corner-accent-button";
+import { Search, MapPin, ArrowLeft, Building2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+interface Building {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+}
 
 export default function NavigationPage() {
-  const [selectedBuilding, setSelectedBuilding] = useState<string | undefined>();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
+  const router = useRouter();
 
-  // Example building list; you can expand later or fetch from an API
-  const buildings = [
-    "Buchanan Tower",
-    "AQ (Academic Quadrangle)",
-    "WMC (West Mall Centre)",
-    "HSS (Health Sciences Centre)",
-    "SFU Surrey - Cedar Building",
+  // Building data with images and descriptions
+  const buildings: Building[] = [
+    {
+      id: "ams-nest",
+      name: "AMS Nest",
+      description: "Student activity center with dining, study spaces, and event venues",
+      image: "/pictures/nest clear.png"
+    },
+    {
+      id: "henry-angus",
+      name: "Henry Angus Building",
+      description: "Home to the Sauder School of Business with modern classrooms",
+      image: "/pictures/sauder.png"
+    },
+    {
+      id: "icics-cs",
+      name: "ICICS/CS Building",
+      description: "Computer Science and engineering research facilities",
+      image: "/pictures/icics.png"
+    },
+    {
+      id: "student-life",
+      name: "UBC Life Sciences Building",
+      description: "Biological sciences research and teaching laboratories",
+      image: "/pictures/life.jpg"
+    },
+    {
+      id: "irving-k-barber",
+      name: "Irving K. Barber Library",
+      description: "Main research library with extensive collections and study areas",
+      image: "/pictures/ikb.jpg"
+    },
+    {
+      id: "fred-kaiser",
+      name: "Fred Kaiser Building",
+      description: "Engineering and computer science building with labs",
+      image: "/pictures/fred.jpg"
+    },
+    {
+      id: "woodward-library",
+      name: "Woodward Library",
+      description: "Health sciences library serving medicine and pharmacy",
+      image: "/pictures/woodward.jpg"
+    },
+    {
+      id: "walter-koerner",
+      name: "Walter C. Koerner Library",
+      description: "Undergraduate library with collaborative study spaces",
+      image: "/pictures/koerner.jpg"
+    }
   ];
 
-  const handleStartNavigation = () => {
-    if (!selectedBuilding) return alert("Please select a building first!");
-    // For now, just log; later integrate Mapbox and route rendering
-    console.log("Navigating to:", selectedBuilding);
+  // Filter buildings based on search query
+  const filteredBuildings = buildings.filter(building =>
+    building.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    building.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleBuildingSelect = (building: Building) => {
+    // Navigate to building detail page
+    router.push(`/navigate/${building.id}`);
   };
 
   return (
-    <main className="min-h-screen bg-background py-16 px-6">
-      <div className="max-w-4xl mx-auto text-center space-y-8">
-        <h1 className="text-4xl font-bold">Start Indoor Navigation</h1>
-        <p className="text-muted-foreground">
-          Select the building you want to explore. You’ll be able to see rooms and paths on the map next.
-        </p>
+    <main className="min-h-screen" style={{ backgroundColor: '#FDFDF5' }}>
+      <div className="max-w-md mx-auto px-6 py-8">
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4 mb-8">
+          <SimpleButton
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+            className="text-gray-700 hover:bg-gray-100 p-2"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </SimpleButton>
+          <div className="flex items-center gap-2">
+            <img
+              src="/pictures/flipaligator.svg"
+              alt="alligator"
+              className="w-[30px] pointer-events-none"
+              style={{
+                width: '30px',
+              }}
+            />
+            {/* <span className="text-gray-700 text-sm font-medium">RoomiGator</span> */}
+          </div>
+        </div>
 
-        {/* Building Selection */}
-        <Card className="mx-auto max-w-md border border-border/60">
-          <CardContent className="flex flex-col space-y-4">
-            <div className="flex items-center gap-2 text-primary font-medium text-lg">
-              <Building2 className="h-6 w-6" />
-              Select a Building
-            </div>
+        {/* Hero Section */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-4 text-gray-900">
+            RoomiGator
+          </h1>
+          <p className="text-gray-600 text-lg font-medium">
+            Discover your destination at UBC
+          </p>
+        </div>
 
-            <Select onValueChange={setSelectedBuilding}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a building..." />
-              </SelectTrigger>
-              <SelectContent>
-                {buildings.map((bld, idx) => (
-                  <SelectItem key={idx} value={bld}>
-                    {bld}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Search Bar */}
+        <div className="mb-8">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <SimpleInput
+              type="text"
+              placeholder="Search buildings, departments, or facilities..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-12 pr-4 py-4 bg-white text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm rounded-sm border-2"
+            />
+          </div>
+        </div>
 
-            <Button
-              className="bg-primary text-white hover:bg-primary/90"
-              onClick={handleStartNavigation}
+        {/* Building Cards Grid */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          {filteredBuildings.map((building) => (
+            <SimpleCard
+              key={building.id}
+              className="bg-white overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 rounded-sm border-2"
+              onClick={() => handleBuildingSelect(building)}
             >
-              Start Navigation
-              <MapPin className="ml-2 h-5 w-5" />
-            </Button>
-          </CardContent>
-        </Card>
+              <SimpleCardContent className="p-0">
+                {/* Building Image */}
+                <div className="relative h-32 overflow-hidden">
+                  <img
+                    src={building.image}
+                    alt={building.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='128' viewBox='0 0 200 128'%3E%3Crect width='200' height='128' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236b7280' font-family='Arial, sans-serif' font-size='12'%3EBuilding%3C/text%3E%3C/svg%3E";
+                    }}
+                  />
+                </div>
 
-        {/* Placeholder for future map */}
+                {/* Building Info */}
+                <div className="p-4">
+                  <h3 className="font-bold text-gray-900 text-sm mb-2 leading-tight">
+                    {building.name}
+                  </h3>
+                  <p className="text-gray-600 text-xs leading-relaxed line-clamp-2">
+                    {building.description}
+                  </p>
+                </div>
+              </SimpleCardContent>
+            </SimpleCard>
+          ))}
+        </div>
+
+        {/* No Results Message */}
+        {filteredBuildings.length === 0 && searchQuery && (
+          <div className="text-center py-12">
+            <Building2 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-gray-600 text-lg font-medium mb-2">No buildings found</h3>
+            <p className="text-gray-500 text-sm">
+              Try searching with different keywords
+            </p>
+          </div>
+        )}
+
+        {/* Selected Building Info */}
         {selectedBuilding && (
-          <div className="mt-10 rounded-2xl overflow-hidden border border-border/60 shadow-lg bg-background aspect-[16/9] flex items-center justify-center text-muted-foreground">
-            <p className="text-lg">Map of <strong>{selectedBuilding}</strong> will appear here</p>
+          <div className="mt-6">
+            <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+              <div className="flex items-center gap-3 mb-4">
+                <MapPin className="h-5 w-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-blue-900">Selected: {selectedBuilding.name}</h3>
+              </div>
+              <p className="text-blue-700 text-sm mb-4 leading-relaxed">{selectedBuilding.description}</p>
+              <CornerAccentButton
+                className="w-full font-medium py-3 rounded-lg"
+                onClick={() => handleBuildingSelect(selectedBuilding)}
+              >
+                Start Navigation
+              </CornerAccentButton>
+            </div>
           </div>
         )}
       </div>
