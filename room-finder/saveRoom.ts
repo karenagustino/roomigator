@@ -1,5 +1,5 @@
 // lib/saveRoom.ts
-import { createClient } from "./supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import type { Database, BuildingRow, FloorRow, RoomRow } from "@/lib/types";
 
 type DB = Database;
@@ -17,10 +17,9 @@ export async function saveRoomToSupabase(
   | { error: unknown; data: null }
 > {
   try {
-    let supabase = createClient();
     // 1) find or create building (match by name)
     const { data: existingB, error: existingBErr } = await supabase
-      .from<DB["public"]["Tables"]["buildings"]["Row"]>("buildings")
+      .from("buildings")
       .select("*")
       .eq("name", b.name)
       .maybeSingle();
@@ -31,7 +30,7 @@ export async function saveRoomToSupabase(
       building = existingB as BuildingRow;
     } else {
       const { data: createdB, error: createBError } = await supabase
-        .from<DB["public"]["Tables"]["buildings"]["Row"]>("buildings")
+        .from("buildings")
         .insert([
           {
             name: b.name,
@@ -49,7 +48,7 @@ export async function saveRoomToSupabase(
 
     // 2) find or create floor (match by name + building_id)
     const { data: existingF, error: existingFErr } = await supabase
-      .from<DB["public"]["Tables"]["floors"]["Row"]>("floors")
+      .from("floors")
       .select("*")
       .eq("name", f.name)
       .eq("building_id", building.id)
@@ -62,7 +61,7 @@ export async function saveRoomToSupabase(
       floor = existingF as FloorRow;
     } else {
       const { data: createdF, error: createFError } = await supabase
-        .from<DB["public"]["Tables"]["floors"]["Row"]>("floors")
+        .from("floors")
         .insert([
           {
             name: f.name,
@@ -82,7 +81,7 @@ export async function saveRoomToSupabase(
     if (createdFloorThisCall) {
       const newFloorsCount = (building.floors ?? 0) + 1;
       const { data: updatedB, error: updateBError } = await supabase
-        .from<DB["public"]["Tables"]["buildings"]["Row"]>("buildings")
+        .from("buildings")
         .update({ floors: newFloorsCount })
         .eq("id", building.id)
         .select()
@@ -102,7 +101,7 @@ export async function saveRoomToSupabase(
     };
 
     const { data: createdRoom, error: createRoomError } = await supabase
-      .from<DB["public"]["Tables"]["rooms"]["Row"]>("rooms")
+      .from("rooms")
       .insert([roomPayload])
       .select()
       .single();
@@ -111,7 +110,7 @@ export async function saveRoomToSupabase(
     // 4) increment rooms count on the floor (denormalized)
     const newRoomsCount = (floor.rooms ?? 0) + 1;
     const { data: updatedF, error: updateFError } = await supabase
-      .from<DB["public"]["Tables"]["floors"]["Row"]>("floors")
+      .from("floors")
       .update({ rooms: newRoomsCount })
       .eq("id", floor.id)
       .select()

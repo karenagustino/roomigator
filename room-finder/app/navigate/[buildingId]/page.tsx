@@ -186,6 +186,8 @@ export default function BuildingDetailPage({ params }: { params: { buildingId: s
 
                 {/* Map Area */}
                 <div>
+                    
+
 
                 </div>
 
