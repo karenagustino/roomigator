@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, MoreVertical, MapPin, ArrowLeft } from "lucide-react";
+import { SimpleCard, SimpleCardContent } from "@/components/ui/simple-card";
+import { SimpleInput } from "@/components/ui/simple-input";
+import { SimpleButton } from "@/components/ui/simple-button";
+import { CornerAccentButton } from "@/components/ui/corner-accent-button";
+import { Search, MapPin, ArrowLeft, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface Building {
@@ -24,56 +25,57 @@ export default function NavigationPage() {
     {
       id: "ams-nest",
       name: "AMS Nest",
-      description: "This is a fun description",
+      description: "Student activity center with dining, study spaces, and event venues",
       image: "/pictures/nest clear.png"
     },
     {
       id: "henry-angus",
       name: "Henry Angus Building",
-      description: "This is a fun description",
+      description: "Home to the Sauder School of Business with modern classrooms",
       image: "/pictures/sauder.png"
     },
     {
       id: "icics-cs",
       name: "ICICS/CS Building",
-      description: "This is a fun description",
+      description: "Computer Science and engineering research facilities",
       image: "/pictures/icics.png"
     },
     {
       id: "student-life",
       name: "UBC Life Sciences Building",
-      description: "This is a fun description",
+      description: "Biological sciences research and teaching laboratories",
       image: "/pictures/life.jpg"
     },
     {
       id: "irving-k-barber",
       name: "Irving K. Barber Library",
-      description: "This is a fun description",
+      description: "Main research library with extensive collections and study areas",
       image: "/pictures/ikb.jpg"
     },
     {
       id: "fred-kaiser",
       name: "Fred Kaiser Building",
-      description: "This is a fun description",
+      description: "Engineering and computer science building with labs",
       image: "/pictures/fred.jpg"
     },
     {
       id: "woodward-library",
       name: "Woodward Library",
-      description: "This is a fun description",
+      description: "Health sciences library serving medicine and pharmacy",
       image: "/pictures/woodward.jpg"
     },
     {
       id: "walter-koerner",
       name: "Walter C. Koerner Library",
-      description: "This is a fun description",
+      description: "Undergraduate library with collaborative study spaces",
       image: "/pictures/koerner.jpg"
     }
   ];
 
   // Filter buildings based on search query
   const filteredBuildings = buildings.filter(building =>
-    building.name.toLowerCase().includes(searchQuery.toLowerCase())
+    building.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    building.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleBuildingSelect = (building: Building) => {
@@ -82,97 +84,118 @@ export default function NavigationPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto px-4 py-6">
-        {/* Header */}
-        <div>
-          <Button
+    <main className="min-h-screen" style={{ backgroundColor: '#FDFDF5' }}>
+      <div className="max-w-md mx-auto px-6 py-8">
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4 mb-8">
+          <SimpleButton
             variant="ghost"
             size="sm"
             onClick={() => router.back()}
-
+            className="text-gray-700 hover:bg-gray-100 p-2"
           >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-xl font-bold text-white">FindMyRoom</h1>
+            <ArrowLeft className="h-5 w-5" />
+          </SimpleButton>
+          <div className="flex items-center gap-2">
+            <img
+              src="/pictures/flipaligator.svg"
+              alt="alligator"
+              className="w-[30px] pointer-events-none"
+              style={{
+                width: '30px',
+              }}
+            />
+            {/* <span className="text-gray-700 text-sm font-medium">RoomiGator</span> */}
+          </div>
         </div>
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-black mb-3">FindMyRoom</h1>
-          <p className="text-lg font-semibold text-black mb-6">Ready to look for where to go?</p>
+
+        {/* Hero Section */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-4 text-gray-900">
+            RoomiGator
+          </h1>
+          <p className="text-gray-600 text-lg font-medium">
+            Discover your destination at UBC
+          </p>
         </div>
 
         {/* Search Bar */}
-        <div className="mb-6">
+        <div className="mb-8">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <SimpleInput
               type="text"
-              placeholder="Search for buildings"
+              placeholder="Search buildings, departments, or facilities..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-10 text-sm rounded-lg border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              className="pl-12 pr-4 py-4 bg-white text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm rounded-sm border-2"
             />
           </div>
         </div>
 
-        {/* Building Cards Grid - Mobile Optimized */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Building Cards Grid */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
           {filteredBuildings.map((building) => (
-            <Card
+            <SimpleCard
               key={building.id}
-              className="bg-white shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+              className="bg-white overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 rounded-sm border-2"
               onClick={() => handleBuildingSelect(building)}
             >
-              <CardContent className="p-0">
+              <SimpleCardContent className="p-0">
                 {/* Building Image */}
-                <div className="relative">
+                <div className="relative h-32 overflow-hidden">
                   <img
                     src={building.image}
                     alt={building.name}
-                    className="w-full h-32 object-cover rounded-t-lg"
+                    className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='128' viewBox='0 0 200 128'%3E%3Crect width='200' height='128' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236b7280' font-family='Arial, sans-serif' font-size='12'%3EImage placeholder%3C/text%3E%3C/svg%3E";
+                      target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='128' viewBox='0 0 200 128'%3E%3Crect width='200' height='128' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236b7280' font-family='Arial, sans-serif' font-size='12'%3EBuilding%3C/text%3E%3C/svg%3E";
                     }}
                   />
                 </div>
 
                 {/* Building Info */}
-                <div className="p-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-black text-sm mb-1 leading-tight">{building.name}</h3>
-                      <p className="text-gray-500 text-xs">{building.description}</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="p-1 h-auto text-gray-400 hover:text-gray-600 ml-1 flex-shrink-0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log("Options clicked for:", building.name);
-                      }}
-                    >
-                      <MoreVertical className="h-3 w-3" />
-                    </Button>
-                  </div>
+                <div className="p-4">
+                  <h3 className="font-bold text-gray-900 text-sm mb-2 leading-tight">
+                    {building.name}
+                  </h3>
+                  <p className="text-gray-600 text-xs leading-relaxed line-clamp-2">
+                    {building.description}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+              </SimpleCardContent>
+            </SimpleCard>
           ))}
         </div>
 
+        {/* No Results Message */}
+        {filteredBuildings.length === 0 && searchQuery && (
+          <div className="text-center py-12">
+            <Building2 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-gray-600 text-lg font-medium mb-2">No buildings found</h3>
+            <p className="text-gray-500 text-sm">
+              Try searching with different keywords
+            </p>
+          </div>
+        )}
+
         {/* Selected Building Info */}
         {selectedBuilding && (
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex items-center gap-2 mb-3">
-              <MapPin className="h-4 w-4 text-blue-600" />
-              <h3 className="text-sm font-semibold text-blue-900">Selected: {selectedBuilding.name}</h3>
+          <div className="mt-6">
+            <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+              <div className="flex items-center gap-3 mb-4">
+                <MapPin className="h-5 w-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-blue-900">Selected: {selectedBuilding.name}</h3>
+              </div>
+              <p className="text-blue-700 text-sm mb-4 leading-relaxed">{selectedBuilding.description}</p>
+              <CornerAccentButton
+                className="w-full font-medium py-3 rounded-lg"
+                onClick={() => handleBuildingSelect(selectedBuilding)}
+              >
+                Start Navigation
+              </CornerAccentButton>
             </div>
-            <p className="text-blue-700 text-xs mb-3">{selectedBuilding.description}</p>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm h-8">
-              Start Navigation to {selectedBuilding.name}
-            </Button>
           </div>
         )}
       </div>
