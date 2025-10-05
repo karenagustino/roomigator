@@ -429,7 +429,7 @@ export default function BuildingDetailPage({ params }: { params: { buildingId: s
 
                         {/* Static path from blue dot to pin (if pin exists) - rendered after the images so it's visible */}
                         {animatedPath && (
-                            <svg className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+                            <svg className="absolute inset-0 pointer-events-none" style={{ zIndex: 15 }}>
                                 <path
                                     d={animatedPath}
                                     stroke="#2563EB"
