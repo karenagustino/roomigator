@@ -111,14 +111,7 @@ export default function HomePage() {
 
             {/* Decorative logo mark in hero (optional, faint) */}
             <div className="pointer-events-none absolute -right-10 bottom-[-80px] hidden opacity-15 sm:block">
-              <Image
-                src="/roomigator-logo.svg"
-                alt="RoomFinder Mark"
-                width={280}
-                height={280}
-                className="select-none"
-                aria-hidden
-              />
+
             </div>
           </div>
         </div>
