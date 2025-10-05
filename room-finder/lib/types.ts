@@ -1,85 +1,89 @@
-export type RoomType =
-  | "classroom"
-  | "office"
-  | "lab"
-  | "restroom"
-  | "elevator"
-  | "staircase"
-  | "other";
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
 
-export type CoordinateSystem = "pixel" | "wgs84";
+export interface Database {
+  public: {
+    Tables: {
+      buildings: {
+        Row: {
+          id: string;
+          created_at: string;
+          name: string;
+          address_json: Json; // AddressJSON stored as JSONB
+          floors: string[]; // denormalized relation
+        };
+        Insert: {
+          id?: string; // generated automatically
+          created_at?: string;
+          name: string;
+          address_json?: Json;
+          floors?: string[];
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          name?: string;
+          address_json?: Json;
+          floors?: string[];
+        };
+      };
 
-export interface RoomCoordinates {
-  // For simplicity, we use {x,y} for both pixel and map (x=lng, y=lat in wgs84)
-  x: number;
-  y: number;
-}
+      floors: {
+        Row: {
+          id: string;
+          name: string;
+          building_id: string;
+          created_at: string;
+          rooms_count: number;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          building_id: string;
+          created_at?: string;
+          rooms_count?: number;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          building_id?: string;
+          created_at?: string;
+          rooms_count?: number;
+        };
+      };
 
-export interface Room {
-  id: string;
-  floorId: string;
-  buildingId?: string;
-  number: string;
-  name: string;
-  type: RoomType;
-  floor: number;
-  coordinates: RoomCoordinates; // pixel or wgs84 depending on coordinateSystem
-  accessible: boolean;
-  capacity?: number;
-  description?: string;
-  coordinateSystem?: CoordinateSystem; // optional hint for stored rows
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface Floor {
-  id: string;
-  buildingId: string;
-  number: number;
-  name: string;
-  floorPlanUrl?: string;
-  rooms: Room[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface Building {
-  id: string;
-  name: string;
-  address: string;
-  coordinates: { lat: number; lng: number };
-  floors: Floor[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface RoomFeatureProperties {
-  roomId: string;
-  number: string;
-  name: string;
-  type: RoomType;
-  floor: number;
-  accessible: boolean;
-  capacity: number | null;
-}
-
-export interface RoomFeature {
-  type: "Feature";
-  properties: RoomFeatureProperties;
-  geometry: {
-    type: "Point";
-    coordinates: [number, number]; // [x,y] for pixel, [lng,lat] for wgs84
+      rooms: {
+        Row: {
+          id: string;
+          name: string;
+          floor_id: string;
+          geo_json: Json; // RoomGeoJSON stored as JSONB
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          floor_id: string;
+          geo_json: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          floor_id?: string;
+          geo_json?: Json;
+          created_at?: string;
+        };
+      };
+    };
   };
 }
 
-export interface RoomPayload {
-  buildingId: string;
-  floorId: string;
-  coordinateSystem: CoordinateSystem;
-  room: Room;
-  feature: RoomFeature;
-  featureCollection: {
-    type: "FeatureCollection";
-    features: RoomFeature[];
-  };
-}
+export type BuildingRow = Database["public"]["Tables"]["buildings"]["Row"];
+export type FloorRow = Database["public"]["Tables"]["floors"]["Row"];
+export type RoomRow = Database["public"]["Tables"]["rooms"]["Row"];
