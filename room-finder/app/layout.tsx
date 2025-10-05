@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Roomigator",
   description: "Find any room. Instantly.",
+  icons: {
+    icon: "/icon.png",
+  }
 };
 
 export default function RootLayout({
