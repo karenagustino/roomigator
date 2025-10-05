@@ -4,8 +4,8 @@ import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
-import "@/lib/saveRoom"
-import {saveRoomToSupabase} from "@/lib/saveRoom"
+import "@/lib/saveRoom";
+import { saveRoomToSupabase } from "@/lib/saveRoom";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,16 +21,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  Building2,
-  MapPin,
-  Plus,
-  Trash2,
-  Layers,
-  Search,
-} from "lucide-react";
-
-import type { supabase } from "@/lib/supabaseClient";
+import { Building2, MapPin, Plus, Trash2, Layers, Search } from "lucide-react";
 
 import type { BuildingRow, FloorRow, RoomRow, Database } from "@/lib/types";
 
@@ -53,7 +44,9 @@ export default function AdminMapEditor() {
   const [rooms, setRooms] = useState<RoomRow[]>([]);
 
   // selection state (persisted)
-  const [selectedBuilding, setSelectedBuilding] = useState<BuildingRow | null>(null);
+  const [selectedBuilding, setSelectedBuilding] = useState<BuildingRow | null>(
+    null
+  );
   const [selectedFloor, setSelectedFloor] = useState<FloorRow | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<RoomRow | null>(null);
 
@@ -61,7 +54,12 @@ export default function AdminMapEditor() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // form state
-  const [newBuilding, setNewBuilding] = useState({ name: "", address: "", lat: "", lng: "" });
+  const [newBuilding, setNewBuilding] = useState({
+    name: "",
+    address: "",
+    lat: "",
+    lng: "",
+  });
   const [newRoom, setNewRoom] = useState<any>({
     number: "",
     name: "",
@@ -125,66 +123,76 @@ export default function AdminMapEditor() {
   // ---------- persistence helpers ----------
   useEffect(() => {
     // restore persisted selection after sample data loads
-    const bId = localStorage.getItem(LOCAL_KEYS.BUILDING);
-    const fId = localStorage.getItem(LOCAL_KEYS.FLOOR);
-    if (bId) {
+    const bIdRaw = localStorage.getItem(LOCAL_KEYS.BUILDING);
+    const fIdRaw = localStorage.getItem(LOCAL_KEYS.FLOOR);
+    const bId = bIdRaw ? Number(bIdRaw) : null;
+    const fId = fIdRaw ? Number(fIdRaw) : null;
+    if (bId != null && !Number.isNaN(bId)) {
       const b = buildings.find((x) => x.id === bId);
       if (b) setSelectedBuilding(b);
     }
-    if (fId) {
+    if (fId != null && !Number.isNaN(fId)) {
       const f = floors.find((x) => x.id === fId);
       if (f) setSelectedFloor(f);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buildings.length, floors.length]);
 
-  const persistSelection = (building?: BuildingRow | null, floor?: FloorRow | null) => {
-    if (building) localStorage.setItem(LOCAL_KEYS.BUILDING, building.id);
-    if (floor) localStorage.setItem(LOCAL_KEYS.FLOOR, floor.id);
+  const persistSelection = (
+    building?: BuildingRow | null,
+    floor?: FloorRow | null
+  ) => {
+    if (building) localStorage.setItem(LOCAL_KEYS.BUILDING, String(building.id));
+    if (floor) localStorage.setItem(LOCAL_KEYS.FLOOR, String(floor.id));
   };
 
   // ---------- small helpers ----------
   const getAddrLine = (b: BuildingRow) => {
-    const a = b.address_json as any;
+    const a = b.address as any;
     return a?.line1 ?? a?.address ?? JSON.stringify(a ?? "");
   };
 
   const extractRoomProps = (r: RoomRow) => {
-    const props = (r.geo_json as any)?.properties ?? {};
-    const coords = (r.geo_json as any)?.geometry?.coordinates ?? (r.geo_json as any)?.coordinates ?? null;
+    const props = (r.json as any)?.properties ?? {};
+    const coords =
+      (r.json as any)?.geometry?.coordinates ?? (r.json as any)?.coordinates ?? null;
     return { props, coords };
   };
 
   // ---------- sample data ----------
   const loadSampleData = () => {
+    // numeric IDs to match DB shape
     const b1: BuildingRow = {
-      id: "b1",
+      id: 1,
       created_at: new Date().toISOString(),
       name: "Academic Quadrangle",
-      address_json: { line1: "8888 University Dr, Burnaby, BC" },
-      floors: ["f1", "f2"],
+      address: { line1: "8888 University Dr, Burnaby, BC" },
+      floors: 2,
+      json: {},
     };
 
     const f1: FloorRow = {
-      id: "f1",
+      id: 10,
       name: "Ground Floor",
       building_id: b1.id,
       created_at: new Date().toISOString(),
-      rooms_count: 2,
+      rooms: 2,
+      json: {},
     };
     const f2: FloorRow = {
-      id: "f2",
+      id: 11,
       name: "Second Floor",
       building_id: b1.id,
       created_at: new Date().toISOString(),
-      rooms_count: 1,
+      rooms: 1,
+      json: {},
     };
 
     const r1: RoomRow = {
-      id: "r1",
+      id: 100,
       name: "Main Lecture Hall",
       floor_id: f1.id,
-      geo_json: {
+      json: {
         type: "Feature",
         properties: {
           roomNumber: "AQ 1001",
@@ -198,10 +206,10 @@ export default function AdminMapEditor() {
       created_at: new Date().toISOString(),
     };
     const r2: RoomRow = {
-      id: "r2",
+      id: 101,
       name: "Computer Lab",
       floor_id: f1.id,
-      geo_json: {
+      json: {
         type: "Feature",
         properties: {
           roomNumber: "AQ 1002",
@@ -214,10 +222,10 @@ export default function AdminMapEditor() {
       created_at: new Date().toISOString(),
     };
     const r3: RoomRow = {
-      id: "r3",
+      id: 102,
       name: "Faculty Office",
       floor_id: f2.id,
-      geo_json: {
+      json: {
         type: "Feature",
         properties: {
           roomNumber: "AQ 2001",
@@ -251,7 +259,7 @@ export default function AdminMapEditor() {
   const handleDrawCreate = (e: any) => {
     const feature = e.features?.[0];
     if (!feature) return;
-    setNewRoom((p: any) => ({ ...p, geo_json: feature }));
+    setNewRoom((p: any) => ({ ...p, json: feature }));
     if (feature.geometry?.type === "Point") {
       const [x, y] = feature.geometry.coordinates;
       setNewRoom((p: any) => ({ ...p, coordinates: { x, y } }));
@@ -262,7 +270,7 @@ export default function AdminMapEditor() {
   const handleDrawUpdate = (e: any) => {
     const feature = e.features?.[0];
     if (feature) {
-      setNewRoom((p: any) => ({ ...p, geo_json: feature }));
+      setNewRoom((p: any) => ({ ...p, json: feature }));
       if (feature.geometry?.type === "Point") {
         const [x, y] = feature.geometry.coordinates;
         setNewRoom((p: any) => ({ ...p, coordinates: { x, y } }));
@@ -289,19 +297,17 @@ export default function AdminMapEditor() {
     }
   };
 
-  // ---------- Supabase placeholder ----------
-  // This function demonstrates how you would insert building -> floor -> room using typed Supabase client.
-  // It will only attempt to run if environment variables are set. Otherwise it logs the intended operations.
-
   // ---------- CRUD handlers ----------
   const handleAddBuilding = () => {
     if (!newBuilding.name || !newBuilding.address) return;
+    const id = Date.now();
     const b: BuildingRow = {
-      id: crypto.randomUUID(),
+      id,
       created_at: new Date().toISOString(),
       name: newBuilding.name,
-      address_json: { line1: newBuilding.address, lat: newBuilding.lat || undefined, lng: newBuilding.lng || undefined },
-      floors: [],
+      address: { line1: newBuilding.address, lat: newBuilding.lat || undefined, lng: newBuilding.lng || undefined },
+      floors: 0,
+      json: {},
     };
     console.log("[BUILDING ADD]", b);
     setBuildings((p) => [...p, b]);
@@ -315,17 +321,21 @@ export default function AdminMapEditor() {
       console.warn("Select a building first");
       return;
     }
+    const id = Date.now();
     const floor: FloorRow = {
-      id: crypto.randomUUID(),
+      id,
       name: `Floor ${floors.filter((f) => f.building_id === selectedBuilding.id).length + 1}`,
       building_id: selectedBuilding.id,
       created_at: new Date().toISOString(),
-      rooms_count: 0,
+      rooms: 0,
+      json: {},
     };
     console.log("[FLOOR ADD]", floor);
     setFloors((p) => [...p, floor]);
-    // update denormalized floors on building
-    setBuildings((p) => p.map((b) => (b.id === selectedBuilding.id ? { ...b, floors: [...b.floors, floor.id] } : b)));
+    // update denormalized floors count on building
+    setBuildings((p) =>
+      p.map((b) => (b.id === selectedBuilding.id ? { ...b, floors: (b.floors || 0) + 1 } : b))
+    );
     setSelectedFloor(floor);
     persistSelection(selectedBuilding, floor);
     setRooms((prev) => prev.filter((r) => r.floor_id !== floor.id)); // defensive
@@ -347,7 +357,7 @@ export default function AdminMapEditor() {
     }
 
     const pendingCoords = newRoom.coordinates as { x: number; y: number } | undefined;
-    const featureFromDraw = newRoom.geo_json as any | undefined;
+    const featureFromDraw = newRoom.json as any | undefined;
 
     if (!pendingCoords && !featureFromDraw) {
       console.warn("Cannot add room: no coordinates or drawn geometry");
@@ -384,11 +394,12 @@ export default function AdminMapEditor() {
             },
           };
 
+    const roomId = Date.now();
     const room: RoomRow = {
-      id: crypto.randomUUID(),
+      id: roomId,
       name: newRoom.name,
       floor_id: selectedFloor.id,
-      geo_json: geoFeature as unknown as Database["public"]["Tables"]["rooms"]["Row"]["geo_json"],
+      json: geoFeature as unknown as Database["public"]["Tables"]["rooms"]["Row"]["json"],
       created_at: new Date().toISOString(),
     };
 
@@ -403,21 +414,42 @@ export default function AdminMapEditor() {
     // 1) Print out the data when Add Room is clicked
     console.log("[ADD ROOM] payload:", payload);
 
-    // 2) Attempt to save to Supabase using the placeholder function (skips if env not set)
+    // 2) Save to supabase (placeholder file you provided)
     const result = await saveRoomToSupabase(selectedBuilding, selectedFloor, room);
+
     if (result?.error) {
-      console.warn("[SAVE SKIPPED/FAILED]", result.error);
-    } else {
-      console.log("[SAVE OK]", result.data ?? "no-data-returned");
+      console.warn("[SAVE FAILED]", result.error);
+      // fallback: add the local room object so UI isn't blocked
+      setRooms((p) => [...p, room]);
+    } else if (result?.data) {
+      const { building: savedB, floor: savedF, room: savedRoom } = result.data;
+      console.log("[SAVE OK] savedRoom:", savedRoom);
+
+      // Upsert building in local state (building.floors is a number)
+      setBuildings((prev) => {
+        const found = prev.find((x) => x.id === savedB.id);
+        if (found) return prev.map((x) => (x.id === savedB.id ? savedB : x));
+        return [...prev, savedB];
+      });
+
+      // Upsert floor
+      setFloors((prev) => {
+        const found = prev.find((x) => x.id === savedF.id);
+        if (found) return prev.map((x) => (x.id === savedF.id ? savedF : x));
+        return [...prev, savedF];
+      });
+
+      // Add room returned from DB
+      setRooms((p) => [...p, savedRoom]);
+
+      // keep selected building/floor persistent
+      setSelectedBuilding(savedB);
+      setSelectedFloor(savedF);
+      persistSelection(savedB, savedF);
     }
 
-    // 3) Persist selection and update local UI state (do not clear building/floor)
-    setRooms((p) => [...p, room]);
-    setSelectedRoom(room);
-    persistSelection(selectedBuilding, selectedFloor);
-
-    // increment room count locally
-    setFloors((prev) => prev.map((f) => (f.id === selectedFloor.id ? { ...f, rooms_count: (f.rooms_count || 0) + 1 } : f)));
+    // increment room count locally for the selected floor
+    setFloors((prev) => prev.map((f) => (f.id === selectedFloor.id ? { ...f, rooms: (f.rooms || 0) + 1 } : f)));
 
     // keep building/floor selected but clear room inputs
     setNewRoom({ number: "", name: "", type: "classroom", accessible: false, capacity: "", description: "" });
@@ -432,10 +464,14 @@ export default function AdminMapEditor() {
     }
   };
 
-  const handleDeleteRoom = (roomId: string) => {
+  const handleDeleteRoom = (roomId: number) => {
     setRooms((p) => p.filter((r) => r.id !== roomId));
     if (selectedFloor) {
-      setFloors((prev) => prev.map((f) => (f.id === selectedFloor.id ? { ...f, rooms_count: Math.max(0, (f.rooms_count || 1) - 1) } : f)));
+      setFloors((prev) =>
+        prev.map((f) =>
+          f.id === selectedFloor.id ? { ...f, rooms: Math.max(0, (f.rooms || 1) - 1) } : f
+        )
+      );
     }
     // remove from draw if exists
     if (draw.current) {
@@ -516,7 +552,7 @@ export default function AdminMapEditor() {
                         <div key={b.id} className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedBuilding?.id === b.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`} onClick={() => { setSelectedBuilding(b); persistSelection(b, selectedFloor || null); const firstFloor = floors.find((f) => f.building_id === b.id); if (firstFloor) setSelectedFloor(firstFloor); }}>
                           <div className="font-medium">{b.name}</div>
                           <div className="text-sm text-gray-600">{getAddrLine(b)}</div>
-                          <Badge variant="secondary" className="mt-1">{b.floors?.length ?? 0} floors</Badge>
+                          <Badge variant="secondary" className="mt-1">{b.floors ?? 0} floors</Badge>
                         </div>
                       ))}
                     </div>
@@ -537,7 +573,7 @@ export default function AdminMapEditor() {
                           {floors.filter((f) => f.building_id === selectedBuilding.id).map((fl) => (
                             <div key={fl.id} className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedFloor?.id === fl.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`} onClick={() => { setSelectedFloor(fl); persistSelection(selectedBuilding, fl); }}>
                               <div className="font-medium">{fl.name}</div>
-                              <Badge variant="secondary" className="mt-1">{fl.rooms_count ?? 0} rooms</Badge>
+                              <Badge variant="secondary" className="mt-1">{fl.rooms ?? 0} rooms</Badge>
                             </div>
                           ))}
                         </div>
@@ -564,19 +600,12 @@ export default function AdminMapEditor() {
                           </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="room-number">Room Number</Label>
-                          <Input id="room-number" value={newRoom.number} onChange={(e) => setNewRoom((p: any) => ({ ...p, number: e.target.value }))} placeholder="e.g., AQ 1001" />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="room-name">Room Name</Label>
-                          <Input id="room-name" value={newRoom.name} onChange={(e) => setNewRoom((p: any) => ({ ...p, name: e.target.value }))} placeholder="e.g., Main Lecture Hall" />
-                        </div>
+                        <div className="space-y-2"><Label htmlFor="room-number">Room Number</Label><Input id="room-number" value={newRoom.number} onChange={(e) => setNewRoom((p:any)=>({...p, number: e.target.value}))} placeholder="e.g., AQ 1001" /></div>
+                        <div className="space-y-2"><Label htmlFor="room-name">Room Name</Label><Input id="room-name" value={newRoom.name} onChange={(e) => setNewRoom((p:any)=>({...p, name: e.target.value}))} placeholder="e.g., Main Lecture Hall" /></div>
 
                         <div className="space-y-2">
                           <Label htmlFor="room-type">Room Type</Label>
-                          <Select value={newRoom.type} onValueChange={(value: any) => setNewRoom((p: any) => ({ ...p, type: value }))}>
+                          <Select value={newRoom.type} onValueChange={(value:any)=>setNewRoom((p:any)=>({...p, type:value}))}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="classroom">Classroom</SelectItem>
@@ -590,18 +619,12 @@ export default function AdminMapEditor() {
                           </Select>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="room-capacity">Capacity (optional)</Label>
-                          <Input id="room-capacity" type="number" value={newRoom.capacity} onChange={(e) => setNewRoom((p: any) => ({ ...p, capacity: e.target.value }))} placeholder="e.g., 30" />
-                        </div>
+                        <div className="space-y-2"><Label htmlFor="room-capacity">Capacity (optional)</Label><Input id="room-capacity" type="number" value={newRoom.capacity} onChange={(e)=>setNewRoom((p:any)=>({...p, capacity: e.target.value}))} placeholder="e.g., 30" /></div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="room-description">Description (optional)</Label>
-                          <Input id="room-description" value={newRoom.description} onChange={(e) => setNewRoom((p: any) => ({ ...p, description: e.target.value }))} placeholder="e.g., Computer lab with 30 workstations" />
-                        </div>
+                        <div className="space-y-2"><Label htmlFor="room-description">Description (optional)</Label><Input id="room-description" value={newRoom.description} onChange={(e)=>setNewRoom((p:any)=>({...p, description: e.target.value}))} placeholder="e.g., Computer lab with 30 workstations" /></div>
 
                         <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="room-accessible" checked={newRoom.accessible} onChange={(e) => setNewRoom((p: any) => ({ ...p, accessible: e.target.checked }))} className="rounded" />
+                          <input type="checkbox" id="room-accessible" checked={newRoom.accessible} onChange={(e)=>setNewRoom((p:any)=>({...p, accessible: e.target.checked}))} className="rounded" />
                           <Label htmlFor="room-accessible">Wheelchair Accessible</Label>
                         </div>
 
@@ -672,18 +695,17 @@ export default function AdminMapEditor() {
                         </pattern>
                       </defs>
                       <rect x="0" y="0" width="1000" height="600" fill="url(#grid)" />
-                      {rooms
-                        .map((r) => {
-                          const { coords } = extractRoomProps(r);
-                          if (!coords) return null;
-                          const [cx, cy] = coords;
-                          return (
-                            <g key={r.id}>
-                              <circle cx={cx as any} cy={cy as any} r="8" fill="#3b82f6" stroke="#fff" strokeWidth="2" />
-                              <text x={(cx as any) + 12} y={(cy as any) + 4} fontSize="12" fill="#111827">{(r.geo_json as any)?.properties?.roomNumber ?? r.name}</text>
-                            </g>
-                          );
-                        })}
+                      {rooms.map((r) => {
+                        const { coords } = extractRoomProps(r);
+                        if (!coords) return null;
+                        const [cx, cy] = coords;
+                        return (
+                          <g key={r.id}>
+                            <circle cx={cx as any} cy={cy as any} r="8" fill="#3b82f6" stroke="#fff" strokeWidth="2" />
+                            <text x={(cx as any) + 12} y={(cy as any) + 4} fontSize="12" fill="#111827">{(r.json as any)?.properties?.roomNumber ?? r.name}</text>
+                          </g>
+                        );
+                      })}
                     </svg>
                   </div>
                 )}
