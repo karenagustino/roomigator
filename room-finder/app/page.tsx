@@ -40,12 +40,6 @@ export default function HomePage() {
             >
               Admin
             </Button>
-            <Button
-              className="shadow-sm"
-              onClick={() => router.push("/navigate")}
-            >
-              Get Started
-            </Button>
           </div>
         </div>
       </header>
