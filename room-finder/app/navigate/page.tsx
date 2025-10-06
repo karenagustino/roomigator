@@ -1,76 +1,116 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SimpleCard, SimpleCardContent } from "@/components/ui/simple-card";
 import { SimpleInput } from "@/components/ui/simple-input";
 import { SimpleButton } from "@/components/ui/simple-button";
 import { CornerAccentButton } from "@/components/ui/corner-accent-button";
 import { Search, MapPin, ArrowLeft, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+// import { supabase } from "@/lib/supabaseClient";
 
 interface Building {
   id: string;
   name: string;
   description: string;
-  image: string;
+  image: string | null; // Updated to allow null for image
+  address: string; // Added address field
+  floors: number; // Added floors field
 }
 
 export default function NavigationPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
-  const router = useRouter();
-
-  // Building data with images and descriptions
-  const buildings: Building[] = [
+  const [buildings, setBuildings] = useState<Building[]>([
     {
       id: "ams-nest",
       name: "AMS Nest",
       description: "Student activity center with dining, study spaces, and event venues",
-      image: "/pictures/nest clear.png"
+      image: "/pictures/nest clear.png",
+      address: "",
+      floors: 0
     },
     {
       id: "henry-angus",
       name: "Henry Angus Building",
       description: "Home to the Sauder School of Business with modern classrooms",
-      image: "/pictures/sauder.png"
+      image: "/pictures/sauder.png",
+      address: "",
+      floors: 0
     },
     {
       id: "icics-cs",
       name: "ICICS/CS Building",
       description: "Computer Science and engineering research facilities",
-      image: "/pictures/icics.png"
+      image: "/pictures/icics.png",
+      address: "",
+      floors: 0
     },
     {
       id: "student-life",
       name: "UBC Life Sciences Building",
       description: "Biological sciences research and teaching laboratories",
-      image: "/pictures/life.jpg"
+      image: "/pictures/life.jpg",
+      address: "",
+      floors: 0
     },
     {
       id: "irving-k-barber",
       name: "Irving K. Barber Library",
       description: "Main research library with extensive collections and study areas",
-      image: "/pictures/ikb.jpg"
+      image: "/pictures/ikb.jpg",
+      address: "",
+      floors: 0
     },
     {
       id: "fred-kaiser",
       name: "Fred Kaiser Building",
       description: "Engineering and computer science building with labs",
-      image: "/pictures/fred.jpg"
+      image: "/pictures/fred.jpg",
+      address: "",
+      floors: 0
     },
     {
       id: "woodward-library",
       name: "Woodward Library",
       description: "Health sciences library serving medicine and pharmacy",
-      image: "/pictures/woodward.jpg"
+      image: "/pictures/woodward.jpg",
+      address: "",
+      floors: 0
     },
     {
       id: "walter-koerner",
       name: "Walter C. Koerner Library",
       description: "Undergraduate library with collaborative study spaces",
-      image: "/pictures/koerner.jpg"
+      image: "/pictures/koerner.jpg",
+      address: "",
+      floors: 0
     }
-  ];
+  ]);
+  const router = useRouter();
+
+  // useEffect(() => {
+  //   const fetchBuildings = async () => {
+  //     const { data, error } = await supabase
+  //       .from("buildings")
+  //       .select("id, name, address, floors");
+  //     if (error) {
+  //       console.error("Error fetching buildings:", error);
+  //     } else {
+  //       const formattedData = (data || []).map((building) => ({
+  //         id: building.id,
+  //         name: building.name,
+  //         description: "No description available",
+  //         image: null, // Leave image blank as requested
+  //         address: JSON.stringify(building.address),
+  //         floors: building.floors
+  //       }));
+  //       setBuildings((prevBuildings) => [...prevBuildings, ...formattedData]);
+  //     }
+  //   };
+
+  //   fetchBuildings();
+  // }, []);
 
   // Filter buildings based on search query
   const filteredBuildings = buildings.filter(building =>
@@ -145,7 +185,7 @@ export default function NavigationPage() {
                 {/* Building Image */}
                 <div className="relative h-32 overflow-hidden">
                   <img
-                    src={building.image}
+                    src={building.image || "/default-placeholder.png"}
                     alt={building.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
