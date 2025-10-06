@@ -7,7 +7,7 @@ import { SimpleButton } from "@/components/ui/simple-button";
 import { CornerAccentButton } from "@/components/ui/corner-accent-button";
 import { Search, MapPin, ArrowLeft, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+// import { supabase } from "@/lib/supabaseClient";
 
 interface Building {
   id: string;
@@ -89,28 +89,28 @@ export default function NavigationPage() {
   ]);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchBuildings = async () => {
-      const { data, error } = await supabase
-        .from("buildings")
-        .select("id, name, address, floors");
-      if (error) {
-        console.error("Error fetching buildings:", error);
-      } else {
-        const formattedData = (data || []).map((building) => ({
-          id: building.id,
-          name: building.name,
-          description: "No description available",
-          image: null, // Leave image blank as requested
-          address: JSON.stringify(building.address),
-          floors: building.floors
-        }));
-        setBuildings((prevBuildings) => [...prevBuildings, ...formattedData]);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchBuildings = async () => {
+  //     const { data, error } = await supabase
+  //       .from("buildings")
+  //       .select("id, name, address, floors");
+  //     if (error) {
+  //       console.error("Error fetching buildings:", error);
+  //     } else {
+  //       const formattedData = (data || []).map((building) => ({
+  //         id: building.id,
+  //         name: building.name,
+  //         description: "No description available",
+  //         image: null, // Leave image blank as requested
+  //         address: JSON.stringify(building.address),
+  //         floors: building.floors
+  //       }));
+  //       setBuildings((prevBuildings) => [...prevBuildings, ...formattedData]);
+  //     }
+  //   };
 
-    fetchBuildings();
-  }, []);
+  //   fetchBuildings();
+  // }, []);
 
   // Filter buildings based on search query
   const filteredBuildings = buildings.filter(building =>
